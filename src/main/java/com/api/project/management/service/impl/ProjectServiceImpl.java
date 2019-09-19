@@ -3,8 +3,8 @@
  */
 package com.api.project.management.service.impl;
 
+import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
@@ -126,11 +126,14 @@ public class ProjectServiceImpl implements ProjectService {
 				log.error("Project Creation validation failed  endDate is not after startDate");
 				throw new ProjectCreationException("endDate");
 			}
-		} else if ((null == projectRequest.getStartDate()) && (null == projectRequest.getEndDate())) {
-			Date todayDate = new Date();
-			LocalDateTime localDateTimeTomorrow = LocalDateTime.from(todayDate.toInstant()).plusDays(1);
-			Date tomorrowDate = Date.from(localDateTimeTomorrow.atZone(ZoneId.systemDefault()).toInstant());
-			projectRequest.setStartDate(todayDate);
+		} 
+		// if startDate and endDate are null, default startDate will be today and endDate is tomorrow
+		else if ((null == projectRequest.getStartDate()) && (null == projectRequest.getEndDate())) {
+			Date todaysDate = new Date();
+			LocalDate localDateTomorrow = Instant.ofEpochMilli(todaysDate.getTime()).atZone(ZoneId.systemDefault())
+					.toLocalDate().plusDays(1);
+			Date tomorrowDate = Date.from(localDateTomorrow.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant());
+			projectRequest.setStartDate(todaysDate);
 			projectRequest.setEndDate(tomorrowDate);
 		}
 	}
@@ -207,17 +210,17 @@ public class ProjectServiceImpl implements ProjectService {
 		// Step 1: find Project via projectId
 		findProjectByProjectId(projectRequest.getProjectId());
 
-		// Step 2: deletes Project if matching projectId found in DB
-		projectRepository.delete(projectRequestConverter.convert(projectRequest));
-
-		// Step 3: nullify projectId references for projectId in users table
+		// Step 2: nullify projectId references for projectId in users table
 		deleteProjectIdReferenceFromUser(projectRequest.getProjectId());
 
-		// Step 4: delete all tasks from Task table with matching projectId
+		// Step 3: delete all tasks from Task table with matching projectId
 		deleteTaskProjectIdReferences(projectRequest.getProjectId());
 
-		// Step 5: delete all parentTasks from ParentTask table with matching projectId
+		// Step 4: delete all parentTasks from ParentTask table with matching projectId
 		deleteParentTasksForProjectId(projectRequest.getProjectId());
+
+		// Step 5: deletes Project if matching projectId found in DB
+		projectRepository.delete(projectRequestConverter.convert(projectRequest));
 	}
 
 	/**
@@ -239,17 +242,17 @@ public class ProjectServiceImpl implements ProjectService {
 		// Step 1: find Project via projectId
 		findProjectByProjectId(projectId);
 
-		// Step 2: deletes Project if matching projectId found in DB
-		projectRepository.deleteById(projectId);
-
-		// Step 3: nullify projectId references for projectId in users table
+		// Step 2: nullify projectId references for projectId in users table
 		deleteProjectIdReferenceFromUser(projectId);
 
-		// Step 4: delete all tasks from Task table with matching projectId
+		// Step 3: delete all tasks from Task table with matching projectId
 		deleteTaskProjectIdReferences(projectId);
 
-		// Step 5: delete all parentTasks from ParentTask table with matching projectId
+		// Step 4: delete all parentTasks from ParentTask table with matching projectId
 		deleteParentTasksForProjectId(projectId);
+		
+		// Step 5: deletes Project if matching projectId found in DB
+		projectRepository.deleteById(projectId);
 	}
 
 	/**

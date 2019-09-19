@@ -71,7 +71,7 @@ public class ParentTaskServiceImpl implements ParentTaskService {
 	}
 
 	/**
-	 * 
+	 * populate Project Data for missing userDetails
 	 * @param parentTaskDetailsResponse
 	 * @throws ProjectNotFoundException
 	 */
@@ -129,10 +129,10 @@ public class ParentTaskServiceImpl implements ParentTaskService {
 			ProjectNotFoundException, TaskNotFoundException, UserCreationException, UserNotFoundException {
 		// find parentTask via parentTaskId
 		findParentTaskDetailsById(parentTaskDetailsRequest.getParentId());
-		// deletes parentTask if matching parentTaskId found in DB
-		parentTaskRepository.delete(parentTaskRequestConverter.convert(parentTaskDetailsRequest));
 		// delete all tasks associated with this parentTaskId
 		deleteParentTaskIdReferences(parentTaskDetailsRequest.getParentId());
+		// deletes parentTask if matching parentTaskId found in DB
+		parentTaskRepository.delete(parentTaskRequestConverter.convert(parentTaskDetailsRequest));
 	}
 
 	@Override
@@ -140,10 +140,10 @@ public class ParentTaskServiceImpl implements ParentTaskService {
 			TaskNotFoundException, UserCreationException, UserNotFoundException {
 		// find parentTask via parentTaskId
 		findParentTaskDetailsById(parentTaskId);
-		// deletes parentTask if matching parentTaskId found in DB
-		parentTaskRepository.deleteById(parentTaskId);
 		// delete all tasks associated with this parentTaskId
 		deleteParentTaskIdReferences(parentTaskId);
+		// deletes parentTask if matching parentTaskId found in DB
+		parentTaskRepository.deleteById(parentTaskId);
 	}
 
 	/**

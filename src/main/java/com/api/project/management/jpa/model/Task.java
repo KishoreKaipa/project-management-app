@@ -9,15 +9,15 @@ import lombok.Setter;
 
 import java.util.Date;
 
+
 /**
  * The persistent class for the task database table.
- * 
  * @author Narasimha Kishore Kaipa
  * 
  */
 @Entity
-@Table(name = "task")
-@NamedQuery(name = "Task.findAll", query = "SELECT t FROM Task t")
+@Table(name="task")
+@NamedQuery(name="Task.findAll", query="SELECT t FROM Task t")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -25,34 +25,34 @@ public class Task implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
-	@Column(name = "task_id", unique = true, nullable = false)
+	@GeneratedValue(strategy=GenerationType.AUTO)
+	@Column(name="task_id", unique=true, nullable=false)
 	private int taskId;
 
-	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name = "end_date")
+	@Temporal(TemporalType.DATE)
+	@Column(name="end_date", nullable=false)
 	private Date endDate;
 
-	@Column(name = "priority")
+	@Column(nullable=false)
 	private int priority;
 
-	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name = "start_date", nullable = false)
+	@Temporal(TemporalType.DATE)
+	@Column(name="start_date", nullable=false)
 	private Date startDate;
 
-	@Column(name = "status", nullable = false, length = 200)
+	@Column(nullable=false, length=200)
 	private String status;
 
-	@Column(name = "task_description", nullable = false, length = 200)
+	@Column(name="task_description", nullable=false, length=200)
 	private String taskDescription;
 
-	// uni-directional many-to-one association to ParentTask
+	//uni-directional many-to-one association to ParentTask
 	@ManyToOne
-	@JoinColumn(name = "parent_id")
+	@JoinColumn(name="parent_id")
 	private ParentTask parentTask;
 
-	// uni-directional many-to-one association to Project
+	//uni-directional many-to-one association to Project
 	@ManyToOne
-	@JoinColumn(name = "project_id", nullable = false)
+	@JoinColumn(name="project_id")
 	private Project project;
 }

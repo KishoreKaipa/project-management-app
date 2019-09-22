@@ -16,14 +16,15 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+
 /**
  * The persistent class for the users database table.
  * @author Narasimha Kishore Kaipa
  * 
  */
 @Entity
-@Table(name = "users")
-@NamedQuery(name = "User.findAll", query = "SELECT u FROM User u")
+@Table(name="users")
+@NamedQuery(name="User.findAll", query="SELECT u FROM User u")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -31,26 +32,29 @@ public class User implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
-	@Column(name = "user_id", unique = true, nullable = false)
+	@GeneratedValue(strategy=GenerationType.AUTO)
+	@Column(name="user_id", unique=true, nullable=false)
 	private int userId;
-
-	@Column(name = "employee_id", nullable = false)
+	
+	@Column(name="employee_id", nullable=false)
 	private int employeeId;
 
-	@Column(name = "first_name", nullable = false, length = 200)
+	@Column(name="first_name", nullable=false, length=200)
 	private String firstName;
 
-	@Column(name = "last_name", nullable = false, length = 200)
+	@Column(name="last_name", nullable=false, length=200)
 	private String lastName;
-	
-	// uni-directional many-to-one association to Project
+
+	@Column(length=32)
+	private String user;
+
+	//uni-directional many-to-one association to Project
 	@ManyToOne
-	@JoinColumn(name = "project_id")
+	@JoinColumn(name="project_id")
 	private Project project;
 
-	// uni-directional many-to-one association to Task
+	//uni-directional many-to-one association to Task
 	@ManyToOne
-	@JoinColumn(name = "task_id")
+	@JoinColumn(name="task_id")
 	private Task task;
 }

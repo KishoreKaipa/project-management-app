@@ -3,7 +3,7 @@
  */
 package com.api.project.management.service.impl;
 
-import java.time.Instant;
+import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -30,6 +30,7 @@ import com.api.project.management.request.converter.TaskDetailsToTaskConverter;
 import com.api.project.management.response.converter.TaskToTaskDetailsConverter;
 import com.api.project.management.service.TaskService;
 import com.api.project.management.service.UserService;
+import com.api.project.management.util.DateUtils;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -58,6 +59,9 @@ public class TaskServiceImpl implements TaskService {
 
 	@Autowired
 	UserService userService;
+
+	@Autowired
+	DateUtils dateUtils;
 
 	@Override
 	public TaskDetails createTask(TaskDetails taskDetailsRequest) throws UserNotFoundException, TaskCreationException {
@@ -106,6 +110,10 @@ public class TaskServiceImpl implements TaskService {
 			throw new TaskCreationException("taskDesc");
 		}
 
+		if (StringUtils.isBlank(taskDetailsRequest.getStatus())) {
+			taskDetailsRequest.setStatus("ACTIVE");
+		}
+
 		if (null != taskDetailsRequest.getStartDate()) {
 			if (null == taskDetailsRequest.getEndDate()) {
 				log.error("Task Creation validation failed  endDate is null");
@@ -116,15 +124,24 @@ public class TaskServiceImpl implements TaskService {
 				log.error("Task Creation validation failed  endDate is not after startDate");
 				throw new TaskCreationException("endDate");
 			}
-		} 
-		// if startDate and endDate are null, default startDate will be today and endDate is tomorrow
+		}
+		// if startDate and endDate are null, default startDate will be today and
+		// endDate is tomorrow
 		else if ((null == taskDetailsRequest.getStartDate()) && (null == taskDetailsRequest.getEndDate())) {
-			Date todaysDate = new Date();
-			LocalDate localDateTomorrow = Instant.ofEpochMilli(todaysDate.getTime()).atZone(ZoneId.systemDefault())
-					.toLocalDate().plusDays(1);
-			Date tomorrowDate = Date.from(localDateTomorrow.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant());
+			Date todaysDate=null;
+			try {
+				todaysDate = dateUtils.getTodaysDate();
+			} catch (ParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			taskDetailsRequest.setStartDate(todaysDate);
-			taskDetailsRequest.setEndDate(tomorrowDate);
+			try {
+				taskDetailsRequest.setEndDate(dateUtils.getFutureDate(todaysDate, 1));
+			} catch (ParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 	}
 

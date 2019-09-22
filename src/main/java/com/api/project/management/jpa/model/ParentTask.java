@@ -16,15 +16,15 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+
 /**
  * The persistent class for the parent_task database table.
- * 
  * @author Narasimha Kishore Kaipa
  * 
  */
 @Entity
-@Table(name = "parent_task")
-@NamedQuery(name = "ParentTask.findAll", query = "SELECT p FROM ParentTask p")
+@Table(name="parent_task")
+@NamedQuery(name="ParentTask.findAll", query="SELECT p FROM ParentTask p")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -32,16 +32,15 @@ public class ParentTask implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
-	@Column(name = "parent_id", unique = true, nullable = false)
+	@GeneratedValue(strategy=GenerationType.AUTO)
+	@Column(name="parent_id", unique=true, nullable=false)
 	private int parentId;
 
-	@Column(name = "parent_task", nullable = false, length = 200)
+	@Column(name="parent_task", nullable=false, length=200)
 	private String parentTask;
 
-	// uni-directional many-to-one association to Project
+	//uni-directional many-to-one association to Project
 	@ManyToOne
-	@JoinColumn(name = "project_id", nullable = false)
+	@JoinColumn(name="project_id", nullable=false)
 	private Project project;
-
 }

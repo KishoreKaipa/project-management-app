@@ -7,7 +7,6 @@ import java.util.List;
 
 import com.api.project.management.exception.ProjectCreationException;
 import com.api.project.management.exception.ProjectNotFoundException;
-import com.api.project.management.exception.UserCreationException;
 import com.api.project.management.exception.UserNotFoundException;
 import com.api.project.management.model.ProjectDetails;
 
@@ -23,18 +22,16 @@ public interface ProjectService {
 	 * 
 	 * @param projectRequest
 	 * @return projectResponse
-	 * @throws UserCreationException
 	 * @throws UserNotFoundException
 	 * @throws ProjectCreationException
 	 */
-	ProjectDetails createProject(ProjectDetails projectRequest)
-			throws UserCreationException, UserNotFoundException, ProjectCreationException;
+	ProjectDetails createProject(ProjectDetails projectRequest) throws UserNotFoundException, ProjectCreationException;
 
 	/**
 	 * Finds Project by projectId
 	 * 
 	 * @param projectId
-	 * @return projectDetails
+	 * @return
 	 * @throws ProjectNotFoundException
 	 */
 	ProjectDetails findProjectByProjectId(int projectId) throws ProjectNotFoundException;
@@ -42,7 +39,7 @@ public interface ProjectService {
 	/**
 	 * Lists all Projects
 	 * 
-	 * @return
+	 * @return projectDetailsList
 	 */
 	List<ProjectDetails> findAllProjects();
 
@@ -52,31 +49,24 @@ public interface ProjectService {
 	 * @param projectRequest
 	 * @return projectResponse
 	 * @throws ProjectNotFoundException
-	 * @throws ProjectCreationException
 	 * @throws UserNotFoundException
-	 * @throws UserCreationException
 	 */
 	ProjectDetails updateProjectDetails(ProjectDetails projectRequest)
-			throws ProjectNotFoundException, ProjectCreationException, UserCreationException, UserNotFoundException;
+			throws ProjectNotFoundException, UserNotFoundException;
 
 	/**
 	 * Deletes Project
 	 * 
 	 * @param projectRequest
 	 * @throws ProjectNotFoundException
-	 * @throws UserCreationException
-	 * @throws UserNotFoundException
 	 */
-	void deleteProject(ProjectDetails projectRequest)
-			throws ProjectNotFoundException, UserCreationException, UserNotFoundException;
+	void deleteProject(ProjectDetails projectRequest) throws ProjectNotFoundException;
 
 	/**
 	 * Deletes Project by projectId
 	 * 
 	 * @param projectId
 	 * @throws ProjectNotFoundException
-	 * @throws UserCreationException
-	 * @throws UserNotFoundException
 	 */
-	void deleteProjectById(int projectId) throws ProjectNotFoundException, UserCreationException, UserNotFoundException;
+	void deleteProjectById(int projectId) throws ProjectNotFoundException;
 }

@@ -1,13 +1,19 @@
 package com.api.project.management.jpa.model;
 
 import java.io.Serializable;
-import javax.persistence.*;
+import java.time.LocalDate;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.util.Date;
 
 
 /**
@@ -29,9 +35,8 @@ public class Project implements Serializable {
 	@Column(name="project_id", unique=true, nullable=false)
 	private int projectId;
 
-	@Temporal(TemporalType.DATE)
 	@Column(name="end_date", nullable=false)
-	private Date endDate;
+	private LocalDate endDate;
 
 	@Column(nullable=false)
 	private int priority;
@@ -39,7 +44,6 @@ public class Project implements Serializable {
 	@Column(nullable=false, length=200)
 	private String project;
 
-	@Temporal(TemporalType.DATE)
 	@Column(name="start_date", nullable=false)
-	private Date startDate;
+	private LocalDate startDate;
 }

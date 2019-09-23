@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.api.project.management.exception.TaskCreationException;
 import com.api.project.management.exception.TaskNotFoundException;
-import com.api.project.management.exception.UserCreationException;
 import com.api.project.management.exception.UserNotFoundException;
 import com.api.project.management.model.TaskDetails;
 import com.api.project.management.service.TaskService;
@@ -33,7 +32,7 @@ import lombok.extern.slf4j.Slf4j;
  * @author Narasimha Kishore Kaipa
  *
  */
-@CrossOrigin
+@CrossOrigin(origins = "*", allowedHeaders = "*")
 @RestController
 @RequestMapping(path = "/tasks")
 @Slf4j
@@ -47,13 +46,12 @@ public class TaskResource {
 	 * 
 	 * @param taskDetailsRequest
 	 * @return taskDetailsResponse
-	 * @throws UserCreationException
 	 * @throws UserNotFoundException
 	 * @throws TaskCreationException
 	 */
 	@PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<TaskDetails> createTask(@RequestBody TaskDetails taskDetailsRequest)
-			throws UserCreationException, UserNotFoundException, TaskCreationException {
+			throws UserNotFoundException, TaskCreationException {
 		log.info("Create Task request received: " + taskDetailsRequest);
 		return (ResponseEntity<TaskDetails>) ResponseEntity.ok(taskService.createTask(taskDetailsRequest));
 	}
@@ -88,13 +86,12 @@ public class TaskResource {
 	 * @param taskDetailsRequest
 	 * @return taskDetailsResponse
 	 * @throws TaskCreationException
-	 * @throws UserCreationException
 	 * @throws UserNotFoundException
 	 * @throws TaskNotFoundException
 	 */
 	@PutMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<TaskDetails> updateTaskDetails(@RequestBody TaskDetails taskDetailsRequest)
-			throws TaskCreationException, UserCreationException, UserNotFoundException, TaskNotFoundException {
+			throws TaskCreationException, UserNotFoundException, TaskNotFoundException {
 		log.info("Update Task Details request received: " + taskDetailsRequest);
 		return (ResponseEntity<TaskDetails>) ResponseEntity.ok(taskService.updateTask(taskDetailsRequest));
 	}
@@ -103,14 +100,12 @@ public class TaskResource {
 	 * Deletes Task
 	 * 
 	 * @param taskDetailsRequest
-	 * @return deleted taskId
+	 * @return taskId
 	 * @throws TaskNotFoundException
-	 * @throws UserCreationException
-	 * @throws UserNotFoundException
 	 */
 	@DeleteMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Integer> deleteTask(@RequestBody TaskDetails taskDetailsRequest)
-			throws TaskNotFoundException, UserCreationException, UserNotFoundException {
+			throws TaskNotFoundException {
 		log.info("Delete Task request received: " + taskDetailsRequest);
 		taskService.deleteTask(taskDetailsRequest);
 		return ResponseEntity.ok(taskDetailsRequest.getTaskId());
@@ -120,14 +115,11 @@ public class TaskResource {
 	 * Deletes Task by taskId
 	 * 
 	 * @param taskId
-	 * @return deleted taskId
+	 * @return taskId
 	 * @throws TaskNotFoundException
-	 * @throws UserCreationException
-	 * @throws UserNotFoundException
 	 */
 	@DeleteMapping(path = "/{taskId}")
-	public ResponseEntity<Integer> deleteTaskByTaskId(@PathVariable Integer taskId)
-			throws TaskNotFoundException, UserCreationException, UserNotFoundException {
+	public ResponseEntity<Integer> deleteTaskByTaskId(@PathVariable Integer taskId) throws TaskNotFoundException {
 		log.info("Delete Task request received for taskId: " + taskId);
 		taskService.deleteTaskByTaskId(taskId);
 		return ResponseEntity.ok(taskId);

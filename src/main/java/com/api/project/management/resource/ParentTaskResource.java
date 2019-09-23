@@ -20,11 +20,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.api.project.management.exception.ParentTaskCreationException;
 import com.api.project.management.exception.ParentTaskNotFoundException;
-import com.api.project.management.exception.ProjectNotFoundException;
-import com.api.project.management.exception.TaskCreationException;
-import com.api.project.management.exception.TaskNotFoundException;
-import com.api.project.management.exception.UserCreationException;
-import com.api.project.management.exception.UserNotFoundException;
 import com.api.project.management.model.ParentTaskDetails;
 import com.api.project.management.service.ParentTaskService;
 
@@ -36,7 +31,7 @@ import lombok.extern.slf4j.Slf4j;
  * @author Narasimha Kishore Kaipa
  *
  */
-@CrossOrigin
+@CrossOrigin(origins = "*", allowedHeaders = "*")
 @RestController
 @RequestMapping(path = "/parent/tasks")
 @Slf4j
@@ -50,12 +45,11 @@ public class ParentTaskResource {
 	 * 
 	 * @param parentTaskDetailsRequest
 	 * @return parentTaskDetailsResponse
-	 * @throws ProjectNotFoundException
 	 * @throws ParentTaskCreationException
 	 */
 	@PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<ParentTaskDetails> createParentTask(@RequestBody ParentTaskDetails parentTaskDetailsRequest)
-			throws ProjectNotFoundException, ParentTaskCreationException {
+			throws ParentTaskCreationException {
 		log.info("Create Parent Task request received: " + parentTaskDetailsRequest);
 		return (ResponseEntity<ParentTaskDetails>) ResponseEntity
 				.ok(parentTaskService.createParentTask(parentTaskDetailsRequest));
@@ -64,11 +58,10 @@ public class ParentTaskResource {
 	/**
 	 * Lists all parent tasks
 	 * 
-	 * @return list of parentTaskDetails
-	 * @throws ProjectNotFoundException
+	 * @return parentTaskDetails List
 	 */
 	@GetMapping
-	public ResponseEntity<List<ParentTaskDetails>> findAllParentTasks() throws ProjectNotFoundException {
+	public ResponseEntity<List<ParentTaskDetails>> findAllParentTasks() {
 		log.info("Find all parent tasks request received: ");
 		return ResponseEntity.ok(parentTaskService.findAllParentTaskDetails());
 	}
@@ -79,11 +72,10 @@ public class ParentTaskResource {
 	 * @param parentTaskId
 	 * @return parentTaskDetails
 	 * @throws ParentTaskNotFoundException
-	 * @throws ProjectNotFoundException
 	 */
 	@GetMapping(path = "/{parentTaskId}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<ParentTaskDetails> findParentTaskByTaskId(@PathVariable Integer parentTaskId)
-			throws ParentTaskNotFoundException, ProjectNotFoundException {
+			throws ParentTaskNotFoundException {
 		log.info("Find by parentTaskId " + parentTaskId + " request received: ");
 		return ResponseEntity.ok(parentTaskService.findParentTaskDetailsById(parentTaskId));
 	}
@@ -93,34 +85,27 @@ public class ParentTaskResource {
 	 * 
 	 * @param parentTaskRequest
 	 * @return parentTaskResponse
-	 * @throws ProjectNotFoundException
 	 * @throws ParentTaskCreationException
 	 * @throws ParentTaskNotFoundException
 	 */
 	@PutMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<ParentTaskDetails> updateParentTaskDetails(@RequestBody ParentTaskDetails parentTaskRequest)
-			throws ProjectNotFoundException, ParentTaskCreationException, ParentTaskNotFoundException {
+			throws ParentTaskCreationException, ParentTaskNotFoundException {
 		log.info("Update Parent Task Details request received: " + parentTaskRequest);
 		return (ResponseEntity<ParentTaskDetails>) ResponseEntity
 				.ok(parentTaskService.updateParentTask(parentTaskRequest));
 	}
 
 	/**
-	 * Deletes Parent Task
+	 * Deletes Parent Task by body
 	 * 
 	 * @param parentTaskDetailsRequest
-	 * @return deleted parentTaskId
+	 * @return parentTaskId
 	 * @throws ParentTaskNotFoundException
-	 * @throws UserCreationException
-	 * @throws UserNotFoundException
-	 * @throws TaskCreationException
-	 * @throws TaskNotFoundException
-	 * @throws ProjectNotFoundException
 	 */
 	@DeleteMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Integer> deleteParentTask(@RequestBody ParentTaskDetails parentTaskDetailsRequest)
-			throws ParentTaskNotFoundException, UserCreationException, UserNotFoundException, TaskCreationException,
-			TaskNotFoundException, ProjectNotFoundException {
+			throws ParentTaskNotFoundException {
 		log.info("Delete Parent Task request received: " + parentTaskDetailsRequest);
 		parentTaskService.deleteParentTask(parentTaskDetailsRequest);
 		return ResponseEntity.ok(parentTaskDetailsRequest.getParentId());
@@ -130,18 +115,12 @@ public class ParentTaskResource {
 	 * Deletes Parent Task by parentTaskId
 	 * 
 	 * @param parentTaskId
-	 * @return deleted parentTaskId
+	 * @return parentTaskId
 	 * @throws ParentTaskNotFoundException
-	 * @throws UserCreationException
-	 * @throws UserNotFoundException
-	 * @throws TaskCreationException
-	 * @throws TaskNotFoundException
-	 * @throws ProjectNotFoundException
 	 */
 	@DeleteMapping(path = "/{parentTaskId}")
 	public ResponseEntity<Integer> deleteParentTaskByTaskId(@PathVariable Integer parentTaskId)
-			throws ParentTaskNotFoundException, UserCreationException, UserNotFoundException, TaskCreationException,
-			TaskNotFoundException, ProjectNotFoundException {
+			throws ParentTaskNotFoundException {
 		log.info("Delete Parent Task request received for parentTaskId: " + parentTaskId);
 		parentTaskService.deleteParentTaskByTaskId(parentTaskId);
 		return ResponseEntity.ok(parentTaskId);

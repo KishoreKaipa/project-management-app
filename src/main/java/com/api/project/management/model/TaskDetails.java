@@ -1,9 +1,7 @@
 package com.api.project.management.model;
 
-import java.util.Date;
+import java.time.LocalDate;
 
-import com.api.project.management.jpa.model.ParentTask;
-import com.api.project.management.jpa.model.Project;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -25,26 +23,26 @@ public class TaskDetails {
 	private int taskId;
 
 	@JsonProperty("endDate")
-	private Date endDate;
+	private LocalDate endDate;
 
 	@JsonProperty("priority")
 	private int priority;
 
 	@JsonProperty("startDate")
-	private Date startDate;
+	private LocalDate startDate;
 
-	@JsonProperty("status")
-	private String status;
+	@JsonProperty("taskStatus")
+	private String taskStatus;
 
 	@JsonProperty("taskDescription")
 	private String taskDescription;
 
-	@JsonProperty("parentTask")
-	private ParentTask parentTask;
+	@JsonProperty("parentTaskDetails")
+	private ParentTaskDetails parentTaskDetails;
 
-	@JsonProperty("projectId")
-	private Project project;
-	
-	@JsonProperty("user")
-	private UserDetails user;
+	@JsonProperty("projectDetails")
+	private ProjectDetails projectDetails;
+
+	@JsonProperty("userDetails")
+	private UserDetails userDetails;
 }

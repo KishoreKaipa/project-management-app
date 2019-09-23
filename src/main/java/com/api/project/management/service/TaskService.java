@@ -7,7 +7,6 @@ import java.util.List;
 
 import com.api.project.management.exception.TaskCreationException;
 import com.api.project.management.exception.TaskNotFoundException;
-import com.api.project.management.exception.UserCreationException;
 import com.api.project.management.exception.UserNotFoundException;
 import com.api.project.management.model.TaskDetails;
 
@@ -24,12 +23,10 @@ public interface TaskService {
 	 * 
 	 * @param taskDetailsRequest
 	 * @return taskDetailsResponse
-	 * @throws UserCreationException
 	 * @throws UserNotFoundException
 	 * @throws TaskCreationException
 	 */
-	TaskDetails createTask(TaskDetails taskDetailsRequest)
-			throws UserCreationException, UserNotFoundException, TaskCreationException;
+	TaskDetails createTask(TaskDetails taskDetailsRequest) throws UserNotFoundException, TaskCreationException;
 
 	/**
 	 * Updates Task
@@ -37,46 +34,41 @@ public interface TaskService {
 	 * @param taskDetailsRequest
 	 * @return taskDetailsResponse
 	 * @throws TaskCreationException
-	 * @throws UserCreationException
 	 * @throws UserNotFoundException
 	 * @throws TaskNotFoundException
 	 */
 	TaskDetails updateTask(TaskDetails taskDetailsRequest)
-			throws TaskCreationException, UserCreationException, UserNotFoundException, TaskNotFoundException;
+			throws TaskCreationException, UserNotFoundException, TaskNotFoundException;
 
 	/**
-	 * Finds Task by taskId
+	 * Find taskDetails by taskId
 	 * 
 	 * @param taskId
-	 * @return
+	 * @return taskDetails
 	 * @throws TaskNotFoundException
 	 */
 	TaskDetails findTaskDetailsById(int taskId) throws TaskNotFoundException;
 
 	/**
-	 * finds all taskDetails
+	 * Lists all taskDetails
 	 * 
-	 * @return
+	 * @return taskDetailsList
 	 */
 	List<TaskDetails> findAllTaskDetails();
 
 	/**
-	 * Deletes Task
+	 * Deletes Task by body
 	 * 
 	 * @param taskDetails
 	 * @throws TaskNotFoundException
-	 * @throws UserCreationException
-	 * @throws UserNotFoundException
 	 */
-	void deleteTask(TaskDetails taskDetails) throws TaskNotFoundException, UserCreationException, UserNotFoundException;
+	void deleteTask(TaskDetails taskDetails) throws TaskNotFoundException;
 
 	/**
 	 * Deletes Task by taskId
 	 * 
 	 * @param taskId
 	 * @throws TaskNotFoundException
-	 * @throws UserCreationException
-	 * @throws UserNotFoundException
 	 */
-	void deleteTaskByTaskId(int taskId) throws TaskNotFoundException, UserCreationException, UserNotFoundException;
+	void deleteTaskByTaskId(int taskId) throws TaskNotFoundException;
 }

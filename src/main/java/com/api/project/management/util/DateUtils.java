@@ -46,7 +46,7 @@ public class DateUtils {
 	 * @return
 	 * @throws ParseException
 	 */
-	public Date getFutureDate(Date todaysDate, int plusDays) throws ParseException {
+	public Date getFutureDate(Date todaysDate, int plusDays) {
 		Calendar calendarObj = getCalendar(todaysDate, plusDays);
 		return getFormattedDate(calendarObj.getTime());
 	}
@@ -57,7 +57,7 @@ public class DateUtils {
 	 * @return todaysDate without timestamp
 	 * @throws ParseException
 	 */
-	public Date getTodaysDate() throws ParseException {
+	public Date getTodaysDate() {
 		Date todaysDate = new Date();
 		Calendar calendarObj = getCalendar(todaysDate, 0);
 		return getFormattedDate(calendarObj.getTime());
@@ -70,9 +70,14 @@ public class DateUtils {
 	 * @return
 	 * @throws ParseException
 	 */
-	public Date getFormattedDate(Date dateInput) throws ParseException {
+	public Date getFormattedDate(Date dateInput) {
 		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-		return dateFormat.parse(dateFormat.format(dateInput));
+		try {
+			return dateFormat.parse(dateFormat.format(dateInput));
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+		return dateInput;
 	}
 
 	/**
@@ -82,7 +87,7 @@ public class DateUtils {
 	 * @return
 	 * @throws ParseException
 	 */
-	public Date getDateWithoutTimestamp(Date dateWithTime) throws ParseException {
+	public Date getDateWithoutTimestamp(Date dateWithTime) {
 		Calendar calendarObj = getCalendar(dateWithTime, 0);
 		return getFormattedDate(calendarObj.getTime());
 	}

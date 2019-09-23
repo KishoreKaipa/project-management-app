@@ -1,6 +1,7 @@
 package com.api.project.management.model;
 
-import java.util.Date;
+import java.time.LocalDate;
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -25,17 +26,20 @@ public class ProjectDetails {
 	private int projectId;
 
 	@JsonProperty("endDate")
-	private Date endDate;
+	private LocalDate endDate;
 
 	@JsonProperty("priority")
 	private int priority;
 
-	@JsonProperty("projectDesc")
-	private String projectDesc;
+	@JsonProperty("projectDescription")
+	private String projectDescription;
 
 	@JsonProperty("startDate")
-	private Date startDate;
+	private LocalDate startDate;
 
-	@JsonProperty("user")
-	private UserDetails user;
+	@JsonProperty("userDetails")
+	private UserDetails userDetails;
+
+	@JsonProperty("taskList")
+	private List<TaskDetails> taskList;
 }

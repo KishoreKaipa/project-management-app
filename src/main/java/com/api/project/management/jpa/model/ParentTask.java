@@ -41,6 +41,6 @@ public class ParentTask implements Serializable {
 
 	//uni-directional many-to-one association to Project
 	@ManyToOne
-	@JoinColumn(name="project_id", nullable=false)
+	@JoinColumn(name="project_id")
 	private Project project;
 }

@@ -3,11 +3,8 @@
  */
 package com.api.project.management.service.impl;
 
-import java.text.ParseException;
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,7 +15,6 @@ import org.springframework.stereotype.Service;
 
 import com.api.project.management.exception.TaskCreationException;
 import com.api.project.management.exception.TaskNotFoundException;
-import com.api.project.management.exception.UserCreationException;
 import com.api.project.management.exception.UserNotFoundException;
 import com.api.project.management.jpa.model.Task;
 import com.api.project.management.jpa.model.User;
@@ -28,9 +24,8 @@ import com.api.project.management.model.TaskDetails;
 import com.api.project.management.model.UserDetails;
 import com.api.project.management.request.converter.TaskDetailsToTaskConverter;
 import com.api.project.management.response.converter.TaskToTaskDetailsConverter;
+import com.api.project.management.response.converter.UserToUserDetailsConverter;
 import com.api.project.management.service.TaskService;
-import com.api.project.management.service.UserService;
-import com.api.project.management.util.DateUtils;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -55,13 +50,10 @@ public class TaskServiceImpl implements TaskService {
 	TaskToTaskDetailsConverter taskResponseConverter;
 
 	@Autowired
+	UserToUserDetailsConverter userToUserDetailsConverter;
+
+	@Autowired
 	UserRepository userRepository;
-
-	@Autowired
-	UserService userService;
-
-	@Autowired
-	DateUtils dateUtils;
 
 	@Override
 	public TaskDetails createTask(TaskDetails taskDetailsRequest) throws UserNotFoundException, TaskCreationException {
@@ -71,22 +63,23 @@ public class TaskServiceImpl implements TaskService {
 		Task taskDataResponse = taskRepository.save(taskRequestConverter.convert(taskDetailsRequest));
 		TaskDetails taskDetailsResponse = taskResponseConverter.convert(taskDataResponse);
 		// Step 2: Map newly created taskId to user based on userId
-		updateUserTaskIdReference(taskDetailsRequest, taskDataResponse);
-		taskDetailsResponse.setUser(taskDetailsRequest.getUser());
+		UserDetails userDetailsUpdated = updateUserTaskIdReference(taskDetailsRequest, taskDataResponse);
+		taskDetailsResponse.setUserDetails(userDetailsUpdated);
 		return taskDetailsResponse;
 	}
 
 	/**
-	 * Update user reference for associated taskId
+	 * Updates taskId reference to userData
 	 * 
 	 * @param taskDetailsRequest
 	 * @param taskDataResponse
+	 * @return
 	 * @throws UserNotFoundException
 	 */
-	private void updateUserTaskIdReference(TaskDetails taskDetailsRequest, Task taskDataResponse)
+	private UserDetails updateUserTaskIdReference(TaskDetails taskDetailsRequest, Task taskDataResponse)
 			throws UserNotFoundException {
-		if (null != taskDetailsRequest.getUser()) {
-			int userId = taskDetailsRequest.getUser().getUserId();
+		if (null != taskDetailsRequest.getUserDetails()) {
+			int userId = taskDetailsRequest.getUserDetails().getUserId();
 			Optional<User> userDataOpt = userRepository.findById(userId);
 			if (!userDataOpt.isPresent()) {
 				log.error("User with userId " + userId + " not found");
@@ -95,7 +88,9 @@ public class TaskServiceImpl implements TaskService {
 			User userData = userDataOpt.get();
 			userData.setTask(taskDataResponse);
 			userRepository.save(userData);
+			return userToUserDetailsConverter.convert(userData);
 		}
+		return null;
 	}
 
 	/**
@@ -107,11 +102,11 @@ public class TaskServiceImpl implements TaskService {
 	private void validateTaskDetails(TaskDetails taskDetailsRequest) throws TaskCreationException {
 		if (StringUtils.isBlank(taskDetailsRequest.getTaskDescription())) {
 			log.error("Task Creation validation failed  taskDescription is blank");
-			throw new TaskCreationException("taskDesc");
+			throw new TaskCreationException("taskDescription");
 		}
 
-		if (StringUtils.isBlank(taskDetailsRequest.getStatus())) {
-			taskDetailsRequest.setStatus("ACTIVE");
+		if (StringUtils.isBlank(taskDetailsRequest.getTaskStatus())) {
+			taskDetailsRequest.setTaskStatus("ACTIVE");
 		}
 
 		if (null != taskDetailsRequest.getStartDate()) {
@@ -128,20 +123,8 @@ public class TaskServiceImpl implements TaskService {
 		// if startDate and endDate are null, default startDate will be today and
 		// endDate is tomorrow
 		else if ((null == taskDetailsRequest.getStartDate()) && (null == taskDetailsRequest.getEndDate())) {
-			Date todaysDate=null;
-			try {
-				todaysDate = dateUtils.getTodaysDate();
-			} catch (ParseException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			taskDetailsRequest.setStartDate(todaysDate);
-			try {
-				taskDetailsRequest.setEndDate(dateUtils.getFutureDate(todaysDate, 1));
-			} catch (ParseException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			taskDetailsRequest.setStartDate(LocalDate.now());
+			taskDetailsRequest.setEndDate(LocalDate.now().plusDays(1));
 		}
 	}
 
@@ -153,15 +136,13 @@ public class TaskServiceImpl implements TaskService {
 	 * @param endDate
 	 * @return true if endDate is greater than startDate else false
 	 */
-	private boolean validateTaskDates(Date startDate, Date endDate) {
-		LocalDate startDt = startDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-		LocalDate endDt = endDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-		return endDt.isAfter(startDt);
+	private boolean validateTaskDates(LocalDate startDate, LocalDate endDate) {
+		return endDate.isAfter(startDate);
 	}
 
 	@Override
 	public TaskDetails updateTask(TaskDetails taskDetailsRequest)
-			throws TaskNotFoundException, TaskCreationException, UserNotFoundException {
+			throws TaskCreationException, UserNotFoundException, TaskNotFoundException {
 		findTaskDetailsById(taskDetailsRequest.getTaskId());
 		// validate Task Details to Update
 		validateTaskDetails(taskDetailsRequest);
@@ -169,8 +150,8 @@ public class TaskServiceImpl implements TaskService {
 		Task taskDataResponse = taskRepository.save(taskRequestConverter.convert(taskDetailsRequest));
 		TaskDetails taskDetailsResponse = taskResponseConverter.convert(taskDataResponse);
 		// Step 2: Map newly created taskId to user based on userId
-		updateUserTaskIdReference(taskDetailsRequest, taskDataResponse);
-		taskDetailsResponse.setUser(taskDetailsRequest.getUser());
+		UserDetails userDetailsUpdated = updateUserTaskIdReference(taskDetailsRequest, taskDataResponse);
+		taskDetailsResponse.setUserDetails(userDetailsUpdated);
 		return taskDetailsResponse;
 	}
 
@@ -181,26 +162,7 @@ public class TaskServiceImpl implements TaskService {
 			log.error("Task with taskId " + taskId + " not found");
 			throw new TaskNotFoundException(taskId);
 		}
-		TaskDetails taskDetailsResponse = taskResponseConverter.convert(taskData.get());
-		// map userDetails to task
-		mapUserDetailsForTask(taskDetailsResponse);
-		return taskDetailsResponse;
-	}
-
-	/**
-	 * Maps userDetails for chosen taskId
-	 * 
-	 * @param taskDetailsResponse
-	 */
-	private void mapUserDetailsForTask(TaskDetails taskDetailsResponse) {
-		// Update projectId to 0 for any user
-		List<UserDetails> userDetailsList = userService.findAllUsers();
-		for (UserDetails userDetails : userDetailsList) {
-			if ((null != userDetails.getTask())
-					&& (userDetails.getTask().getTaskId() == taskDetailsResponse.getTaskId())) {
-				taskDetailsResponse.setUser(userDetails);
-			}
-		}
+		return taskResponseConverter.convert(taskData.get());
 	}
 
 	@Override
@@ -208,17 +170,13 @@ public class TaskServiceImpl implements TaskService {
 		List<TaskDetails> taskDetailsList = new ArrayList<TaskDetails>();
 		Iterable<Task> taskDataList = taskRepository.findAll();
 		for (Task taskData : taskDataList) {
-			TaskDetails taskDetailsResponse = taskResponseConverter.convert(taskData);
-			// map userDetails to task
-			mapUserDetailsForTask(taskDetailsResponse);
-			taskDetailsList.add(taskDetailsResponse);
+			taskDetailsList.add(taskResponseConverter.convert(taskData));
 		}
 		return taskDetailsList;
 	}
 
 	@Override
-	public void deleteTask(TaskDetails taskDetails)
-			throws TaskNotFoundException, UserCreationException, UserNotFoundException {
+	public void deleteTask(TaskDetails taskDetails) throws TaskNotFoundException {
 		// find task via taskId
 		findTaskDetailsById(taskDetails.getTaskId());
 		// nullify taskId references for taskId in users table
@@ -228,26 +186,21 @@ public class TaskServiceImpl implements TaskService {
 	}
 
 	/**
-	 * Deletes User reference for associated taskId
+	 * Deletes taskId reference from userData
 	 * 
 	 * @param taskId
-	 * @throws UserCreationException
-	 * @throws UserNotFoundException
 	 */
-	private void deleteUserTaskIdReferences(int taskId) throws UserCreationException, UserNotFoundException {
-		// Update projectId to 0 for any user
-		List<UserDetails> userDetailsList = userService.findAllUsers();
-		for (UserDetails userDetails : userDetailsList) {
-			if ((null != userDetails.getTask()) && (userDetails.getTask().getTaskId() == taskId)) {
-				userDetails.setTask(null);
-				userService.updateUser(userDetails);
+	private void deleteUserTaskIdReferences(int taskId) {
+		for (User userData : userRepository.findAll()) {
+			if ((null != userData.getTask()) && (userData.getTask().getTaskId() == taskId)) {
+				userData.setTask(null);
+				userRepository.save(userData);
 			}
 		}
 	}
 
 	@Override
-	public void deleteTaskByTaskId(int taskId)
-			throws TaskNotFoundException, UserCreationException, UserNotFoundException {
+	public void deleteTaskByTaskId(int taskId) throws TaskNotFoundException {
 		// find task via taskId
 		findTaskDetailsById(taskId);
 		// nullify taskId references for taskId in users table

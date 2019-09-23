@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.api.project.management.exception.ProjectCreationException;
 import com.api.project.management.exception.ProjectNotFoundException;
-import com.api.project.management.exception.UserCreationException;
 import com.api.project.management.exception.UserNotFoundException;
 import com.api.project.management.model.ProjectDetails;
 import com.api.project.management.service.ProjectService;
@@ -33,7 +32,7 @@ import lombok.extern.slf4j.Slf4j;
  * @author Narasimha Kishore Kaipa
  *
  */
-@CrossOrigin
+@CrossOrigin(origins = "*", allowedHeaders = "*")
 @RestController
 @RequestMapping(path = "/projects")
 @Slf4j
@@ -47,13 +46,12 @@ public class ProjectsResource {
 	 * 
 	 * @param projectDetailsRequest
 	 * @return projectDetailsResponse
-	 * @throws UserCreationException
 	 * @throws UserNotFoundException
 	 * @throws ProjectCreationException
 	 */
 	@PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<ProjectDetails> createProject(@RequestBody ProjectDetails projectDetailsRequest)
-			throws UserCreationException, UserNotFoundException, ProjectCreationException {
+			throws UserNotFoundException, ProjectCreationException {
 		log.info("Create Project request received: " + projectDetailsRequest);
 		return (ResponseEntity<ProjectDetails>) ResponseEntity.ok(projectService.createProject(projectDetailsRequest));
 	}
@@ -88,13 +86,12 @@ public class ProjectsResource {
 	 * 
 	 * @param projectDetailsRequest
 	 * @return projectDetailsResponse
-	 * @throws UserCreationException
 	 * @throws UserNotFoundException
 	 * @throws ProjectCreationException
 	 */
 	@PutMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<ProjectDetails> updateProjectDetails(@RequestBody ProjectDetails projectDetailsRequest)
-			throws UserCreationException, UserNotFoundException, ProjectCreationException {
+			throws UserNotFoundException, ProjectCreationException {
 		log.info("Update Project request received: " + projectDetailsRequest);
 		return (ResponseEntity<ProjectDetails>) ResponseEntity.ok(projectService.createProject(projectDetailsRequest));
 	}
@@ -103,14 +100,12 @@ public class ProjectsResource {
 	 * Deletes Project
 	 * 
 	 * @param projectRequest
-	 * @return deleted projectId
+	 * @return prjectId
 	 * @throws ProjectNotFoundException
-	 * @throws UserCreationException
-	 * @throws UserNotFoundException
 	 */
 	@DeleteMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Integer> deleteProject(@RequestBody ProjectDetails projectRequest)
-			throws ProjectNotFoundException, UserCreationException, UserNotFoundException {
+			throws ProjectNotFoundException {
 		log.info("Delete Project request received: " + projectRequest);
 		projectService.deleteProject(projectRequest);
 		return ResponseEntity.ok(projectRequest.getProjectId());
@@ -120,14 +115,12 @@ public class ProjectsResource {
 	 * Deletes Project by projectId
 	 * 
 	 * @param projectId
-	 * @return deleted projectId
+	 * @return projectId
 	 * @throws ProjectNotFoundException
-	 * @throws UserCreationException
-	 * @throws UserNotFoundException
 	 */
 	@DeleteMapping(path = "/{projectId}")
 	public ResponseEntity<Integer> deleteProjectByProjectId(@PathVariable Integer projectId)
-			throws ProjectNotFoundException, UserCreationException, UserNotFoundException {
+			throws ProjectNotFoundException {
 		log.info("Delete Project request received for projectId: " + projectId);
 		projectService.deleteProjectById(projectId);
 		return ResponseEntity.ok(projectId);

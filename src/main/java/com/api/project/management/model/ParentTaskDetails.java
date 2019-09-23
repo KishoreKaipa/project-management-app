@@ -9,6 +9,7 @@ import lombok.Setter;
 
 /**
  * Parent Task Model
+ * 
  * @author Narasimha Kishore Kaipa
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -19,9 +20,9 @@ public class ParentTaskDetails {
 	@JsonProperty("parentId")
 	private int parentId;
 
-	@JsonProperty("parentTask")
-	private String parentTask;
-	
-	@JsonProperty("project")
-	private ProjectDetails project;
+	@JsonProperty("parentTaskDescription")
+	private String parentTaskDescription;
+
+	@JsonProperty("projectDetails")
+	private ProjectDetails projectDetails;
 }

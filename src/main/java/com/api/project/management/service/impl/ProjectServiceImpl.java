@@ -3,11 +3,8 @@
  */
 package com.api.project.management.service.impl;
 
-import java.text.ParseException;
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -32,9 +29,8 @@ import com.api.project.management.model.ProjectDetails;
 import com.api.project.management.model.UserDetails;
 import com.api.project.management.request.converter.ProjectDetailsToProjectConverter;
 import com.api.project.management.response.converter.ProjectToProjectDetailsConverter;
+import com.api.project.management.response.converter.UserToUserDetailsConverter;
 import com.api.project.management.service.ProjectService;
-import com.api.project.management.service.UserService;
-import com.api.project.management.util.DateUtils;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -58,7 +54,7 @@ public class ProjectServiceImpl implements ProjectService {
 	ProjectToProjectDetailsConverter projectResponseConverter;
 
 	@Autowired
-	UserService userService;
+	UserToUserDetailsConverter userToUserDetailsConverter;
 
 	@Autowired
 	TaskRepository taskRepository;
@@ -69,19 +65,16 @@ public class ProjectServiceImpl implements ProjectService {
 	@Autowired
 	UserRepository userRepository;
 
-	@Autowired
-	DateUtils dateUtils;
-
 	@Override
 	public ProjectDetails createProject(ProjectDetails projectDetailsRequest)
-			throws UserCreationException, UserNotFoundException, ProjectCreationException {
+			throws UserNotFoundException, ProjectCreationException {
 		validateNewProjectData(projectDetailsRequest);
 		// Step 1: Create Project Data
 		Project projectDataResponse = projectRepository.save(projectRequestConverter.convert(projectDetailsRequest));
 		ProjectDetails projectDetailsResponse = projectResponseConverter.convert(projectDataResponse);
 		// Step 2: Update users table with projectId References
-		updateProjectIdReferencesForUsers(projectDetailsRequest, projectDataResponse);
-		projectDetailsResponse.setUser(projectDetailsRequest.getUser());
+		UserDetails userDetailsUpdated = updateProjectIdReferencesForUsers(projectDetailsRequest, projectDataResponse);
+		projectDetailsResponse.setUserDetails(userDetailsUpdated);
 		return projectDetailsResponse;
 	}
 
@@ -89,14 +82,14 @@ public class ProjectServiceImpl implements ProjectService {
 	 * Updates ProjectId references in users table for assigned User
 	 * 
 	 * @param projectDetailsRequest
-	 * @param projectData
-	 * @throws UserCreationException
+	 * @param projectDataResponse
+	 * @return userDetailsUpdated
 	 * @throws UserNotFoundException
 	 */
-	private void updateProjectIdReferencesForUsers(ProjectDetails projectDetailsRequest, Project projectDataResponse)
-			throws UserCreationException, UserNotFoundException {
-		if (null != projectDetailsRequest.getUser()) {
-			int userId = projectDetailsRequest.getUser().getUserId();
+	private UserDetails updateProjectIdReferencesForUsers(ProjectDetails projectDetailsRequest,
+			Project projectDataResponse) throws UserNotFoundException {
+		if (null != projectDetailsRequest.getUserDetails()) {
+			int userId = projectDetailsRequest.getUserDetails().getUserId();
 			Optional<User> userDataOpt = userRepository.findById(userId);
 			if (!userDataOpt.isPresent()) {
 				log.error("User with userId " + userId + " not found");
@@ -105,7 +98,9 @@ public class ProjectServiceImpl implements ProjectService {
 			User userData = userDataOpt.get();
 			userData.setProject(projectDataResponse);
 			userRepository.save(userData);
+			return userToUserDetailsConverter.convert(userData);
 		}
+		return null;
 	}
 
 	/**
@@ -115,9 +110,9 @@ public class ProjectServiceImpl implements ProjectService {
 	 * @throws ProjectCreationException
 	 */
 	private void validateNewProjectData(ProjectDetails projectRequest) throws ProjectCreationException {
-		if (StringUtils.isBlank(projectRequest.getProjectDesc())) {
-			log.error("Project Creation validation failed  projectDesc is blank");
-			throw new ProjectCreationException("projectDesc");
+		if (StringUtils.isBlank(projectRequest.getProjectDescription())) {
+			log.error("Project Creation validation failed  projectDescription is blank");
+			throw new ProjectCreationException("projectDescription");
 		}
 
 		if (null != projectRequest.getStartDate()) {
@@ -134,20 +129,8 @@ public class ProjectServiceImpl implements ProjectService {
 		// if startDate and endDate are null, default startDate will be today and
 		// endDate is tomorrow
 		else if ((null == projectRequest.getStartDate()) && (null == projectRequest.getEndDate())) {
-			Date todaysDate=null;
-			try {
-				todaysDate = dateUtils.getTodaysDate();
-			} catch (ParseException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			projectRequest.setStartDate(todaysDate);
-			try {
-				projectRequest.setEndDate(dateUtils.getFutureDate(todaysDate, 1));
-			} catch (ParseException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			projectRequest.setStartDate(LocalDate.now());
+			projectRequest.setEndDate(LocalDate.now().plusDays(1));
 		}
 	}
 
@@ -159,10 +142,8 @@ public class ProjectServiceImpl implements ProjectService {
 	 * @param endDate
 	 * @return
 	 */
-	private boolean validateProjectDates(Date startDate, Date endDate) {
-		LocalDate startDt = startDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-		LocalDate endDt = endDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-		return endDt.isAfter(startDt);
+	private boolean validateProjectDates(LocalDate startDate, LocalDate endDate) {
+		return endDate.isAfter(startDate);
 	}
 
 	@Override
@@ -172,9 +153,7 @@ public class ProjectServiceImpl implements ProjectService {
 			log.error("Project with projectId " + projectId + " not found");
 			throw new ProjectNotFoundException(projectId);
 		}
-		ProjectDetails projectDetails = projectResponseConverter.convert(projectData.get());
-		projectDetails.setUser(findUserByProjectId(projectDetails.getProjectId()));
-		return projectDetails;
+		return projectResponseConverter.convert(projectData.get());
 	}
 
 	@Override
@@ -182,44 +161,26 @@ public class ProjectServiceImpl implements ProjectService {
 		List<ProjectDetails> projectDetailsList = new ArrayList<ProjectDetails>();
 		Iterable<Project> projectDataList = projectRepository.findAll();
 		for (Project projectData : projectDataList) {
-			ProjectDetails projectDetails = projectResponseConverter.convert(projectData);
-			projectDetails.setUser(findUserByProjectId(projectData.getProjectId()));
-			projectDetailsList.add(projectDetails);
+			projectDetailsList.add(projectResponseConverter.convert(projectData));
 		}
 		return projectDetailsList;
 	}
 
-	/**
-	 * Finds userDetails by projectId
-	 * 
-	 * @param projectId
-	 * @return
-	 */
-	private UserDetails findUserByProjectId(int projectId) {
-		for (UserDetails userDetails : userService.findAllUsers()) {
-			if ((null != userDetails.getProject()) && (userDetails.getProject().getProjectId() == projectId)) {
-				return userDetails;
-			}
-		}
-		return null;
-	}
-
 	@Override
 	public ProjectDetails updateProjectDetails(ProjectDetails projectDetailsRequest)
-			throws ProjectNotFoundException, ProjectCreationException, UserCreationException, UserNotFoundException {
+			throws ProjectNotFoundException, UserNotFoundException {
 		findProjectByProjectId(projectDetailsRequest.getProjectId());
 		// Step 1: Create Project Data
 		Project projectDataResponse = projectRepository.save(projectRequestConverter.convert(projectDetailsRequest));
 		ProjectDetails projectDetailsResponse = projectResponseConverter.convert(projectDataResponse);
 		// Step 2: Update users table with projectId References
-		updateProjectIdReferencesForUsers(projectDetailsRequest, projectDataResponse);
-		projectDetailsResponse.setUser(projectDetailsRequest.getUser());
+		UserDetails userDetailsResponse = updateProjectIdReferencesForUsers(projectDetailsRequest, projectDataResponse);
+		projectDetailsResponse.setUserDetails(userDetailsResponse);
 		return projectDetailsResponse;
 	}
 
 	@Override
-	public void deleteProject(ProjectDetails projectRequest)
-			throws ProjectNotFoundException, UserCreationException, UserNotFoundException {
+	public void deleteProject(ProjectDetails projectRequest) throws ProjectNotFoundException {
 		// Step 1: find Project via projectId
 		findProjectByProjectId(projectRequest.getProjectId());
 
@@ -236,22 +197,8 @@ public class ProjectServiceImpl implements ProjectService {
 		projectRepository.delete(projectRequestConverter.convert(projectRequest));
 	}
 
-	/**
-	 * Deletes all parentTasks for a given projectId
-	 * 
-	 * @param projectId
-	 */
-	private void deleteParentTasksForProjectId(int projectId) {
-		for (ParentTask parentTaskData : parentTaskRepository.findAll()) {
-			if ((null != parentTaskData.getProject()) && (parentTaskData.getProject().getProjectId() == projectId)) {
-				parentTaskRepository.delete(parentTaskData);
-			}
-		}
-	}
-
 	@Override
-	public void deleteProjectById(int projectId)
-			throws ProjectNotFoundException, UserCreationException, UserNotFoundException {
+	public void deleteProjectById(int projectId) throws ProjectNotFoundException {
 		// Step 1: find Project via projectId
 		findProjectByProjectId(projectId);
 
@@ -275,11 +222,11 @@ public class ProjectServiceImpl implements ProjectService {
 	 * @throws UserNotFoundException
 	 * @throws UserCreationException
 	 */
-	private void deleteProjectIdReferenceFromUser(int projectId) throws UserCreationException, UserNotFoundException {
-		for (UserDetails userDetails : userService.findAllUsers()) {
-			if ((null != userDetails.getProject()) && (userDetails.getProject().getProjectId() == projectId)) {
-				userDetails.setProject(null);
-				userService.updateUser(userDetails);
+	private void deleteProjectIdReferenceFromUser(int projectId) {
+		for (User userData : userRepository.findAll()) {
+			if ((null != userData.getProject()) && (userData.getProject().getProjectId() == projectId)) {
+				userData.setProject(null);
+				userRepository.save(userData);
 			}
 		}
 	}
@@ -293,6 +240,19 @@ public class ProjectServiceImpl implements ProjectService {
 		for (Task taskData : taskRepository.findAll()) {
 			if ((null != taskData.getProject()) && (taskData.getProject().getProjectId() == projectId)) {
 				taskRepository.delete(taskData);
+			}
+		}
+	}
+
+	/**
+	 * Deletes all parentTasks for a given projectId
+	 * 
+	 * @param projectId
+	 */
+	private void deleteParentTasksForProjectId(int projectId) {
+		for (ParentTask parentTaskData : parentTaskRepository.findAll()) {
+			if ((null != parentTaskData.getProject()) && (parentTaskData.getProject().getProjectId() == projectId)) {
+				parentTaskRepository.delete(parentTaskData);
 			}
 		}
 	}

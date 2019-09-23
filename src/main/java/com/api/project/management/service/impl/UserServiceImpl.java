@@ -46,8 +46,7 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public UserDetails createUser(UserDetails userDetailsRequest) throws UserCreationException {
 		validateUserRequestData(userDetailsRequest);
-		User userDataRequest = userRequestConverter.convert(userDetailsRequest);
-		return userResponseConverter.convert(userRepository.save(userDataRequest));
+		return userResponseConverter.convert(userRepository.save(userRequestConverter.convert(userDetailsRequest)));
 	}
 
 	/**
@@ -83,11 +82,10 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public UserDetails updateUser(UserDetails userDetailsRequest) throws UserCreationException, UserNotFoundException {
-		validateUserRequestData(userDetailsRequest);
-		User userDataRequest = userRequestConverter.convert(userDetailsRequest);
 		// check if a user exists with requested userId before proceeding with update
 		findUserByUserId(userDetailsRequest.getUserId());
-		return userResponseConverter.convert(userRepository.save(userDataRequest));
+		validateUserRequestData(userDetailsRequest);
+		return userResponseConverter.convert(userRepository.save(userRequestConverter.convert(userDetailsRequest)));
 	}
 
 	@Override

@@ -30,9 +30,9 @@ public class UserDetails {
 	@JsonProperty("lastName")
 	private String lastName;
 
-	@JsonProperty("project")
-	private ProjectDetails project;
+	@JsonProperty("projectDetails")
+	private ProjectDetails projectDetails;
 
-	@JsonProperty("task")
-	private TaskDetails task;
+	@JsonProperty("taskDetails")
+	private TaskDetails taskDetails;
 }

@@ -14,21 +14,14 @@ import org.springframework.stereotype.Service;
 
 import com.api.project.management.exception.ParentTaskCreationException;
 import com.api.project.management.exception.ParentTaskNotFoundException;
-import com.api.project.management.exception.ProjectNotFoundException;
-import com.api.project.management.exception.TaskCreationException;
-import com.api.project.management.exception.TaskNotFoundException;
-import com.api.project.management.exception.UserCreationException;
-import com.api.project.management.exception.UserNotFoundException;
 import com.api.project.management.jpa.model.ParentTask;
+import com.api.project.management.jpa.model.Task;
 import com.api.project.management.jpa.repository.ParentTaskRepository;
+import com.api.project.management.jpa.repository.TaskRepository;
 import com.api.project.management.model.ParentTaskDetails;
-import com.api.project.management.model.ProjectDetails;
-import com.api.project.management.model.TaskDetails;
 import com.api.project.management.request.converter.ParentTaskDetailsToParentTaskConverter;
 import com.api.project.management.response.converter.ParentTaskToParentTaskDetailsConverter;
 import com.api.project.management.service.ParentTaskService;
-import com.api.project.management.service.ProjectService;
-import com.api.project.management.service.TaskService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -47,86 +40,55 @@ public class ParentTaskServiceImpl implements ParentTaskService {
 	ParentTaskRepository parentTaskRepository;
 
 	@Autowired
-	TaskService taskService;
-
-	@Autowired
-	ProjectService projectService;
-
-	@Autowired
 	ParentTaskDetailsToParentTaskConverter parentTaskRequestConverter;
 
 	@Autowired
 	ParentTaskToParentTaskDetailsConverter parentTaskResponseConverter;
 
+	@Autowired
+	TaskRepository taskRepository;
+
 	@Override
 	public ParentTaskDetails createParentTask(ParentTaskDetails parentTaskDetailsRequest)
-			throws ProjectNotFoundException, ParentTaskCreationException {
+			throws ParentTaskCreationException {
 		// validates parentTask description and projectId
 		validateParentTaskDetails(parentTaskDetailsRequest);
-		ParentTaskDetails parentTaskDetailsResponse = parentTaskResponseConverter
+		return parentTaskResponseConverter
 				.convert(parentTaskRepository.save(parentTaskRequestConverter.convert(parentTaskDetailsRequest)));
-		// populate Project Data accordingly with missing userDetails
-		populateProjectData(parentTaskDetailsResponse);
-		return parentTaskDetailsResponse;
-	}
-
-	/**
-	 * populate Project Data for missing userDetails
-	 * @param parentTaskDetailsResponse
-	 * @throws ProjectNotFoundException
-	 */
-	private void populateProjectData(ParentTaskDetails parentTaskDetailsResponse) throws ProjectNotFoundException {
-		if (null != parentTaskDetailsResponse.getProject()) {
-			ProjectDetails projectDetails = projectService
-					.findProjectByProjectId(parentTaskDetailsResponse.getProject().getProjectId());
-			parentTaskDetailsResponse.setProject(projectDetails);
-		}
-
 	}
 
 	@Override
 	public ParentTaskDetails updateParentTask(ParentTaskDetails parentTaskDetailsRequest)
-			throws ProjectNotFoundException, ParentTaskCreationException, ParentTaskNotFoundException {
+			throws ParentTaskCreationException, ParentTaskNotFoundException {
 		findParentTaskDetailsById(parentTaskDetailsRequest.getParentId());
 		// validates parentTask description and projectId
 		validateParentTaskDetails(parentTaskDetailsRequest);
-		ParentTaskDetails parentTaskDetailsResponse = parentTaskResponseConverter
+		return parentTaskResponseConverter
 				.convert(parentTaskRepository.save(parentTaskRequestConverter.convert(parentTaskDetailsRequest)));
-		// populate Project Data accordingly with missing userDetails
-		populateProjectData(parentTaskDetailsResponse);
-		return parentTaskDetailsResponse;
 	}
 
 	@Override
-	public ParentTaskDetails findParentTaskDetailsById(int parentTaskId)
-			throws ParentTaskNotFoundException, ProjectNotFoundException {
+	public ParentTaskDetails findParentTaskDetailsById(int parentTaskId) throws ParentTaskNotFoundException {
 		Optional<ParentTask> parentTask = parentTaskRepository.findById(parentTaskId);
 		if (!parentTask.isPresent()) {
 			log.error("Parent Task with taskId " + parentTaskId + " not found");
 			throw new ParentTaskNotFoundException(parentTaskId);
 		}
-		ParentTaskDetails parentTaskDetailsResponse = parentTaskResponseConverter.convert(parentTask.get());
-		// populate Project Data accordingly with missing userDetails
-		populateProjectData(parentTaskDetailsResponse);
-		return parentTaskDetailsResponse;
+		return parentTaskResponseConverter.convert(parentTask.get());
 	}
 
 	@Override
-	public List<ParentTaskDetails> findAllParentTaskDetails() throws ProjectNotFoundException {
+	public List<ParentTaskDetails> findAllParentTaskDetails() {
 		List<ParentTaskDetails> parentTaskDetailList = new ArrayList<ParentTaskDetails>();
 		Iterable<ParentTask> parentTaskDataList = parentTaskRepository.findAll();
 		for (ParentTask parentTask : parentTaskDataList) {
-			ParentTaskDetails parentTaskDetailsResponse = parentTaskResponseConverter.convert(parentTask);
-			// populate Project Data accordingly with missing userDetails
-			populateProjectData(parentTaskDetailsResponse);
-			parentTaskDetailList.add(parentTaskDetailsResponse);
+			parentTaskDetailList.add(parentTaskResponseConverter.convert(parentTask));
 		}
 		return parentTaskDetailList;
 	}
 
 	@Override
-	public void deleteParentTask(ParentTaskDetails parentTaskDetailsRequest) throws ParentTaskNotFoundException,
-			ProjectNotFoundException, TaskNotFoundException, UserCreationException, UserNotFoundException {
+	public void deleteParentTask(ParentTaskDetails parentTaskDetailsRequest) throws ParentTaskNotFoundException {
 		// find parentTask via parentTaskId
 		findParentTaskDetailsById(parentTaskDetailsRequest.getParentId());
 		// delete all tasks associated with this parentTaskId
@@ -136,8 +98,7 @@ public class ParentTaskServiceImpl implements ParentTaskService {
 	}
 
 	@Override
-	public void deleteParentTaskByTaskId(int parentTaskId) throws ParentTaskNotFoundException, ProjectNotFoundException,
-			TaskNotFoundException, UserCreationException, UserNotFoundException {
+	public void deleteParentTaskByTaskId(int parentTaskId) throws ParentTaskNotFoundException {
 		// find parentTask via parentTaskId
 		findParentTaskDetailsById(parentTaskId);
 		// delete all tasks associated with this parentTaskId
@@ -147,40 +108,28 @@ public class ParentTaskServiceImpl implements ParentTaskService {
 	}
 
 	/**
-	 * validates new parent task data and throws error if there is validation error
+	 * Validates new parent task data and throws error if there is validation error
 	 * 
 	 * @param parentTaskDetailsRequest
-	 * @throws ParentTaskCreationException
 	 * @throws ParentTaskCreationException
 	 */
 	private void validateParentTaskDetails(ParentTaskDetails parentTaskDetailsRequest)
 			throws ParentTaskCreationException {
-		if (StringUtils.isBlank(parentTaskDetailsRequest.getParentTask())) {
+		if (StringUtils.isBlank(parentTaskDetailsRequest.getParentTaskDescription())) {
 			log.error("Parent Task Creation validation failed  parent task description is blank");
 			throw new ParentTaskCreationException("parentTaskDescription");
-		}
-		if (null == parentTaskDetailsRequest.getProject()) {
-			log.error("Parent Task Creation validation failed  project cannot be blank");
-			throw new ParentTaskCreationException("project");
 		}
 	}
 
 	/**
-	 * Deletes parentTaskId references from Task table
+	 * Deletes tasks with parentTaskId references from Task table
 	 * 
 	 * @param parentTaskId
-	 * @throws UserCreationException
-	 * @throws UserNotFoundException
-	 * @throws TaskCreationException
-	 * @throws TaskNotFoundException
 	 */
-	private void deleteParentTaskIdReferences(int parentTaskId)
-			throws TaskNotFoundException, UserCreationException, UserNotFoundException {
-		// Update projectId to 0 for any user
-		List<TaskDetails> taskDetailsList = taskService.findAllTaskDetails();
-		for (TaskDetails taskDetail : taskDetailsList) {
-			if ((null != taskDetail.getParentTask()) && (taskDetail.getParentTask().getParentId() == parentTaskId)) {
-				taskService.deleteTask(taskDetail);
+	private void deleteParentTaskIdReferences(int parentTaskId) {
+		for (Task taskData : taskRepository.findAll()) {
+			if ((null != taskData.getParentTask()) && (taskData.getParentTask().getParentId() == parentTaskId)) {
+				taskRepository.delete(taskData);
 			}
 		}
 	}

@@ -31,7 +31,7 @@ import lombok.extern.slf4j.Slf4j;
  * @author Narasimha Kishore Kaipa
  *
  */
-@CrossOrigin
+@CrossOrigin(origins = "*", allowedHeaders = "*")
 @RestController
 @RequestMapping(path = "/users")
 @Slf4j

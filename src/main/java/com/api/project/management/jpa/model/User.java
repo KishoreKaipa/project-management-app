@@ -44,10 +44,7 @@ public class User implements Serializable {
 
 	@Column(name="last_name", nullable=false, length=200)
 	private String lastName;
-
-	@Column(length=32)
-	private String user;
-
+	
 	//uni-directional many-to-one association to Project
 	@ManyToOne
 	@JoinColumn(name="project_id")

@@ -21,7 +21,6 @@ import lombok.Setter;
 /**
  * The persistent class for the task database table.
  * @author Narasimha Kishore Kaipa
- * 
  */
 @Entity
 @Table(name="task")

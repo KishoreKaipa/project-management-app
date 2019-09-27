@@ -122,9 +122,12 @@ public class TaskServiceImpl implements TaskService {
 		}
 		// if startDate and endDate are null, default startDate will be today and
 		// endDate is tomorrow
-		else if ((null == taskDetailsRequest.getStartDate()) && (null == taskDetailsRequest.getEndDate())) {
+		else if (null == taskDetailsRequest.getEndDate()) {
 			taskDetailsRequest.setStartDate(LocalDate.now());
 			taskDetailsRequest.setEndDate(LocalDate.now().plusDays(1));
+		} 
+		else {
+			taskDetailsRequest.setStartDate(LocalDate.now());
 		}
 	}
 

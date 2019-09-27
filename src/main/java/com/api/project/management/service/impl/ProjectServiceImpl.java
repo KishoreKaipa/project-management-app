@@ -86,7 +86,7 @@ public class ProjectServiceImpl implements ProjectService {
 	 * @return userDetailsUpdated
 	 * @throws UserNotFoundException
 	 */
-	private UserDetails updateProjectIdReferencesForUsers(ProjectDetails projectDetailsRequest,
+	public UserDetails updateProjectIdReferencesForUsers(ProjectDetails projectDetailsRequest,
 			Project projectDataResponse) throws UserNotFoundException {
 		if (null != projectDetailsRequest.getUserDetails()) {
 			int userId = projectDetailsRequest.getUserDetails().getUserId();
@@ -109,7 +109,7 @@ public class ProjectServiceImpl implements ProjectService {
 	 * @param projectRequest
 	 * @throws ProjectCreationException
 	 */
-	private void validateNewProjectData(ProjectDetails projectRequest) throws ProjectCreationException {
+	public void validateNewProjectData(ProjectDetails projectRequest) throws ProjectCreationException {
 		if (StringUtils.isBlank(projectRequest.getProjectDescription())) {
 			log.error("Project Creation validation failed  projectDescription is blank");
 			throw new ProjectCreationException("projectDescription");
@@ -128,9 +128,14 @@ public class ProjectServiceImpl implements ProjectService {
 		}
 		// if startDate and endDate are null, default startDate will be today and
 		// endDate is tomorrow
-		else if ((null == projectRequest.getStartDate()) && (null == projectRequest.getEndDate())) {
+		else if (null == projectRequest.getEndDate()) {
 			projectRequest.setStartDate(LocalDate.now());
 			projectRequest.setEndDate(LocalDate.now().plusDays(1));
+		}
+		// in the event if endDate is selected without startDate, default startDate to
+		// today
+		else {
+			projectRequest.setStartDate(LocalDate.now());
 		}
 	}
 

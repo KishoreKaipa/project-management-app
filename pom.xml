@@ -153,7 +153,6 @@
 								<exclude>**/*model.*</exclude>
 							</excludes>
 						</configuration>
-
 					</execution>
 				</executions>
 			</plugin>

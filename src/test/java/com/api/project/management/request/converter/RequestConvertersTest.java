@@ -87,6 +87,15 @@ public class RequestConvertersTest {
 		User userData = userDetailsToUserConverter.convert(userDetails);
 		assertEquals(userData.getUserId(), 0);
 	}
+	
+	@Test
+	public void testUserDetailsToUserConverterScenarioThree() {
+		UserDetails userDetails = getUserDetails(TEST_ID);
+		userDetails.getProjectDetails().setProjectId(0);
+		userDetails.getTaskDetails().setTaskId(0);
+		User userData = userDetailsToUserConverter.convert(userDetails);
+		assertEquals(userData.getUserId(), TEST_ID);
+	}
 
 	@Test
 	public void testProjectDetailsToProjectConverter() {

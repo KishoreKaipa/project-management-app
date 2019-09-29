@@ -66,12 +66,14 @@ public class RequestConversionUtils {
 		if (null != taskDetails.getEndDate()) {
 			taskData.setEndDate(taskDetails.getEndDate());
 		}
-		if ((null != taskDetails.getParentTaskDetails()) && parentTaskDetailsCheck) {
+		if ((null != taskDetails.getParentTaskDetails()) && parentTaskDetailsCheck
+				&& (taskDetails.getParentTaskDetails().getParentId() > 0)) {
 			taskData.setParentTask(
 					populateParentTaskDataFromParentTaskDetails(taskDetails.getParentTaskDetails(), false));
 		}
 
-		if ((null != taskDetails.getProjectDetails()) && projectDetailsCheck) {
+		if ((null != taskDetails.getProjectDetails()) && projectDetailsCheck
+				&& (taskDetails.getProjectDetails().getProjectId() > 0)) {
 			taskData.setProject(populateProjectDataFromProjectDetails(taskDetails.getProjectDetails()));
 		}
 
@@ -92,7 +94,8 @@ public class RequestConversionUtils {
 			parentTask.setParentId(parentTaskDetails.getParentId());
 		}
 		parentTask.setParentTask(parentTaskDetails.getParentTaskDescription());
-		if ((null != parentTaskDetails.getProjectDetails()) && projectDetailsCheck) {
+		if ((null != parentTaskDetails.getProjectDetails()) && projectDetailsCheck
+				&& (parentTaskDetails.getProjectDetails().getProjectId() > 0)) {
 			parentTask.setProject(populateProjectDataFromProjectDetails(parentTaskDetails.getProjectDetails()));
 		}
 		return parentTask;

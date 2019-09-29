@@ -12,7 +12,7 @@
 	<groupId>com.api.project.management</groupId>
 	<artifactId>project-management-app</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<packaging>war</packaging>
+	<packaging>jar</packaging>
 	<name>project-management-app</name>
 	<description>Project Management API performing management tasks</description>
 
@@ -26,6 +26,7 @@
 		<sonar.core.codeCoveragePlugin>jacoco</sonar.core.codeCoveragePlugin>
 		<sonar.junit.reportPaths>{project.basedir}/target/surefire-reports</sonar.junit.reportPaths>
 		<sonar.jacoco.reportPaths>{project.basedir}/target/jacoco.exec</sonar.jacoco.reportPaths>
+		<docker.image.prefix>ProjectMgmtApp</docker.image.prefix>
 	</properties>
 
 	<dependencies>
@@ -155,7 +156,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
-				<version>2.18.1</version><!--$NO-MVN-MAN-VER$-->
+				<version>2.18.1</version><!--$NO-MVN-MAN-VER$ -->
 				<executions>
 					<execution>
 						<id>default-test</id>
@@ -165,6 +166,43 @@
 						</goals>
 					</execution>
 				</executions>
+			</plugin>
+			<plugin>
+				<groupId>com.spotify</groupId>
+				<artifactId>docker-maven-plugin</artifactId>
+				<version>0.4.13</version>
+				<dependencies>
+					<dependency>
+						<groupId>org.sonatype.plexus</groupId>
+						<artifactId>plexus-cipher</artifactId>
+						<version>1.4</version>
+					</dependency>
+				</dependencies>
+				<executions>
+					<execution>
+						<id>docker-build</id>
+						<phase>package</phase>
+						<goals>
+							<goal>build</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>docker-tag</id>
+						<phase>package</phase>
+						<goals>
+							<goal>tag</goal>
+						</goals>
+						<configuration>
+							<image>src/main/docker/{project.artifactId}:${project.version}</image>
+							<newName>{project.basedir}/src/main/docker/{project.artifactId}:${project.version}</newName>
+							<forceTags>true</forceTags>
+						</configuration>
+					</execution>
+				</executions>
+				<configuration>
+					<imageName>${docker.image.prefix}/${project.artifactId}:{project.version}</imageName>
+					<dockerDirectory>{project.basedir}/src/main/docker</dockerDirectory>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>

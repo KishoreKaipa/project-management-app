@@ -90,6 +90,16 @@ public class RequestConversionUtilsTest {
 		Task taskData = requestConversionUtils.populateTaskDataFromTaskDetails(taskDetails, false, false);
 		assertEquals(taskData.getTaskId(), 0);
 	}
+	
+	@Test
+	public void testTaskDetailsScenarioFive() {
+		ProjectDetails projectDetails = getProjectDetails(0, LocalDate.now(), LocalDate.now().plusDays(1));
+		ParentTaskDetails parentTaskDetails = getParentTaskDetails(TEST_ID, projectDetails);
+		TaskDetails taskDetails = getTaskDetails(TEST_ID, LocalDate.now(), LocalDate.now().plusDays(1),
+				parentTaskDetails, projectDetails);
+		Task taskData = requestConversionUtils.populateTaskDataFromTaskDetails(taskDetails, true, true);
+		assertEquals(taskData.getTaskId(), TEST_ID);
+	}
 
 	@Test
 	public void testParentTaskDetailsScenarioOne() {
@@ -113,6 +123,14 @@ public class RequestConversionUtilsTest {
 		ParentTask parentTaskData = requestConversionUtils
 				.populateParentTaskDataFromParentTaskDetails(parentTaskDetails, false);
 		assertEquals(parentTaskData.getParentId(), 0);
+	}
+	
+	@Test
+	public void testParentTaskDetailsScenarioFour() {
+		ParentTaskDetails parentTaskDetails = getParentTaskDetails(TEST_ID, getProjectDetails(0, null, null));
+		ParentTask parentTaskData = requestConversionUtils
+				.populateParentTaskDataFromParentTaskDetails(parentTaskDetails, true);
+		assertEquals(parentTaskData.getParentId(), TEST_ID);
 	}
 
 	private ProjectDetails getProjectDetails(int projectId, LocalDate startDate, LocalDate endDate) {

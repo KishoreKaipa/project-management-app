@@ -167,43 +167,6 @@
 					</execution>
 				</executions>
 			</plugin>
-			<plugin>
-				<groupId>com.spotify</groupId>
-				<artifactId>docker-maven-plugin</artifactId>
-				<version>0.4.13</version>
-				<dependencies>
-					<dependency>
-						<groupId>org.sonatype.plexus</groupId>
-						<artifactId>plexus-cipher</artifactId>
-						<version>1.4</version>
-					</dependency>
-				</dependencies>
-				<executions>
-					<execution>
-						<id>docker-build</id>
-						<phase>package</phase>
-						<goals>
-							<goal>build</goal>
-						</goals>
-					</execution>
-					<execution>
-						<id>docker-tag</id>
-						<phase>package</phase>
-						<goals>
-							<goal>tag</goal>
-						</goals>
-						<configuration>
-							<image>src/main/docker/{project.artifactId}:${project.version}</image>
-							<newName>{project.basedir}/src/main/docker/{project.artifactId}:${project.version}</newName>
-							<forceTags>true</forceTags>
-						</configuration>
-					</execution>
-				</executions>
-				<configuration>
-					<imageName>${docker.image.prefix}/${project.artifactId}:{project.version}</imageName>
-					<dockerDirectory>{project.basedir}/src/main/docker</dockerDirectory>
-				</configuration>
-			</plugin>
 		</plugins>
 	</build>
 </project>

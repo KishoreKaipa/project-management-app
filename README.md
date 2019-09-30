@@ -16,8 +16,8 @@ Steps to Run the Code
 -----------------
 Software Required
 -----------------
-JDK 8
-Maven 3.6.0
-Eclipse / IntelliJ IDE
-MySQL DB
-Postman REST Client
+1) JDK 8
+2) Maven 3.6.0
+3) Eclipse / IntelliJ IDE
+4) MySQL DB
+5) Postman REST Client

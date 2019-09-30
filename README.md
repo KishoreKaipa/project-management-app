@@ -11,4 +11,13 @@ Steps to Build the Code
 Steps to Run the Code 
 ---------------------
 1) cd ${project-management-app}
-2) mvn spring-boot:run -Djasypt.encryptor.password=mysql-local-db-secret
+2) mvn spring-boot:run
+
+-----------------
+Software Required
+-----------------
+JDK 8
+Maven 3.6.0
+Eclipse / IntelliJ IDE
+MySQL DB
+Postman REST Client

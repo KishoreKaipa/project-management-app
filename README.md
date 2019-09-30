@@ -6,7 +6,9 @@ Steps to Build the Code
 -------------------------
 1) Clone the App code from Git Repo https://github.com/KishoreKaipa/project-management-app.git
 2) Replace the db password for property spring.datasource.password under {projectDir}/src/main/resources/application.properties to {yourMySQLDBPassword}
-2) Perform mvn clean install -U
+3) Perform mvn clean install -U
+   Note: If you are using Eclipse / STS / IntelliJ IDE's make sure to install Lombok on your IDE (Instructions for Lombok installation can be found via google search)
+
 
 ------------------------
 Steps to Run the Code 

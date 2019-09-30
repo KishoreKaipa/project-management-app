@@ -12,6 +12,8 @@ Steps to Run the Code
 ---------------------
 1) cd ${project-management-app}
 2) mvn spring-boot:run
+3) Application is configured to run in 8085 port, hence URL for Users will be http://localhost:8085/projectmanagement/users etc.
+   Note: Please refer to Sample Postman requests available in GitHub under https://github.com/KishoreKaipa/project-management-app_Postman_API_Collections.git
 
 -----------------
 Software Required
@@ -21,3 +23,5 @@ Software Required
 3) Eclipse / IntelliJ IDE
 4) MySQL DB
 5) Postman REST Client
+
+
